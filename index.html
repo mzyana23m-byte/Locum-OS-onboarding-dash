@@ -390,8 +390,8 @@ function render(){
 function signInView(){
   const steps=[
     ["Enter your email","Use the same email you joined Velocity with."],
-    ["Open the email from Supabase Auth","Supabase is our secure sign-in service. The first time, the email is titled <b>“Confirm your email address”</b>. After that, it’s titled <b>“Your Magic Link”</b>."],
-    ["Click the link in the email","Click <b>“Confirm email address”</b> (first time) or <b>“Log In”</b> (after that). It opens your portal. No password needed."]
+    ["Open the email from Locumos Velocity","It arrives within a minute. The first time, it’s titled <b>“Confirm your Locumos Velocity account”</b>. After that, <b>“Your Locumos Velocity sign-in link”</b>."],
+    ["Click the button in the email","Click <b>“Open my portal”</b> (first time) or <b>“Sign me in”</b> (after that). No password needed."]
   ];
   const list=steps.map(([t,d],i)=>`<li style="display:grid;grid-template-columns:2rem 1fr;gap:.6rem;padding:.6rem 0;border-top:1px solid var(--line)"><b style="font-family:var(--display);font-size:1.4rem;color:var(--accent);line-height:1">${i+1}</b><div><b style="color:var(--head)">${t}</b><br><span class="small muted">${d}</span></div></li>`).join("");
   if(S.signInSent){
@@ -401,9 +401,9 @@ function signInView(){
       <h1 style="font-size:2rem">Check your email</h1>
       <p>We sent a sign-in link to <b style="color:var(--head)">${esc(S.signInSent)}</b>.</p>
       <ol style="list-style:none;padding:0;margin:0">
-        <li style="padding:.55rem 0;border-top:1px solid var(--line)"><b style="color:var(--head)">1. Open your inbox</b><br><span class="small muted">Look for an email from <b>Supabase Auth</b> (our secure sign-in service). First time: <b>“Confirm your email address”</b>. After that: <b>“Your Magic Link”</b>.</span></li>
-        <li style="padding:.55rem 0;border-top:1px solid var(--line)"><b style="color:var(--head)">2. Click the link in the email</b><br><span class="small muted">It says <b>“Confirm email address”</b> or <b>“Log In”</b>. Open it on this device and in this browser. You can close this tab afterwards.</span></li>
-        <li style="padding:.55rem 0;border-top:1px solid var(--line)"><b style="color:var(--head)">3. Not there after 2 minutes?</b><br><span class="small muted">Check Spam and Promotions, then search your inbox for “Supabase”. If you find it in Spam, mark it “Not spam” so the next one arrives normally.</span></li>
+        <li style="padding:.55rem 0;border-top:1px solid var(--line)"><b style="color:var(--head)">1. Open your inbox</b><br><span class="small muted">Look for an email from <b>Locumos Velocity</b>. First time: <b>“Confirm your Locumos Velocity account”</b>. After that: <b>“Your Locumos Velocity sign-in link”</b>.</span></li>
+        <li style="padding:.55rem 0;border-top:1px solid var(--line)"><b style="color:var(--head)">2. Click the button in the email</b><br><span class="small muted">It says <b>“Open my portal”</b> or <b>“Sign me in”</b>. Open it on this device and in this browser. You can close this tab afterwards.</span></li>
+        <li style="padding:.55rem 0;border-top:1px solid var(--line)"><b style="color:var(--head)">3. Not there after 2 minutes?</b><br><span class="small muted">Check Spam and Promotions, then search your inbox for “Velocity”. If you find it in Spam, mark it “Not spam” so the next one arrives normally.</span></li>
       </ol>
       <div class="row">${wait>0?`<button class="btn ghost" disabled>Resend in ${wait}s</button>`:`<button class="btn ghost" data-act="signin-resend">Resend the link</button>`}<button class="btn quiet" data-act="signin-reset">Use a different email</button></div>
       <p class="small muted">Each link works once and expires after an hour. If one has expired, just send a new one.</p>
@@ -669,6 +669,7 @@ function teamView(){
 /* =====================================================================
    ACTIONS
    ===================================================================== */
+async function signInSend(email,okMsg){try{await S.api.signIn(email);if(okMsg)toast(okMsg);return true}catch(e){const m=String(e?.message||"");toast(/rate limit|too many|security purposes/i.test(m)?"Too many sign-in emails just now. Wait a minute and try again.":"Couldn’t send the email. Check the address and try again.");return false}}
 function ctxProfile(){return isStaff()?S.selData.p:S.me}
 function ctxTasks(){return isStaff()?S.selData.tasks:S.my.tasks}
 async function moveTask(id,to,beforeId){
@@ -695,7 +696,7 @@ document.addEventListener("click",async e=>{
   else if(a==="edit"){S.editing=!S.editing;render()}
   else if(a==="signout"){await S.api.signOut();if(DEMO){S.user=null;render()}}
   else if(a==="signin-reset"){S.signInSent=false;render()}
-  else if(a==="signin-resend"){if(await run(()=>S.api.signIn(S.signInSent),"New link sent.")!==false){S.signInAt=Date.now();render()}}
+  else if(a==="signin-resend"){if(await signInSend(S.signInSent,"New link sent.")!==false){S.signInAt=Date.now();render()}}
   else if(a==="flow-next"){const to=+el.dataset.to;await run(()=>S.api.updateProfile(S.me.id,{onboarding_step:to}));S.me.onboarding_step=to;render();scrollTo(0,0)}
   else if(a==="skool-open"){setTimeout(()=>{S.flowSkoolClicked=true;render()},300)}
   else if(a==="flow-finish"){
@@ -740,7 +741,7 @@ document.addEventListener("drop",e=>{const col=e.target.closest?.("[data-drop]")
 
 document.addEventListener("submit",async e=>{
   const f=e.target,k=f.dataset.form;if(!k)return;e.preventDefault();const fd=new FormData(f);
-  if(k==="signin"){const email=String(fd.get("email")).trim();if(await run(()=>S.api.signIn(email))!==false){S.signInSent=email;S.signInAt=Date.now();render()}}
+  if(k==="signin"){const email=String(fd.get("email")).trim();if(await signInSend(email)!==false){S.signInSent=email;S.signInAt=Date.now();render()}}
   else if(k==="add-card"){
     const title=String(fd.get("title")||"").trim();if(!title)return;const p=ctxProfile();const month=+f.dataset.month;
     const col=ctxTasks().filter(t=>t.month===month&&t.status==="todo");
