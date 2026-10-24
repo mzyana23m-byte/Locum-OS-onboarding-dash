@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Locumos Velocity</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
+:root{
+  --bg:#09222B;--panel:#0F2C37;--surface:#12333F;--sunk:#0F2C37;--track:#1D4553;
+  --ink:#C7DCE2;--head:#FFFFFF;--muted:#89A5AE;--line:#1D4553;
+  --brand:#4FD3DB;--brand-hover:#33BCC5;--brand-ink:#09222B;--accent:#45C6CE;--deep:#0B7C88;
+  --brand-soft:rgba(69,198,206,.14);--signal:#45C6CE;--signal-soft:rgba(79,211,219,.08);
+  --danger:#F08A7E;--danger-soft:rgba(240,138,126,.14);
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --body:"Public Sans","Helvetica Neue",Arial,system-ui,sans-serif;
+  color-scheme:dark;box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--body);-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--panel)}
+img,video,iframe{max-width:100%}
+a{color:var(--accent)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--signal);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);line-height:1.1;margin:0;letter-spacing:-.01em;color:var(--head)}
+h1{font-size:clamp(1.9rem,4.6vw,3rem);font-weight:800}
+h2{font-size:1.35rem;font-weight:700}
+h3{font-size:1.05rem;font-weight:700}
+p{margin:.4em 0}
+.muted{color:var(--muted)}.small{font-size:.875rem}
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--panel);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1240px;margin:0 auto;padding:.65rem 1.25rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.mark{font-family:var(--display);font-weight:800;font-size:1.15rem;color:var(--accent)}
+.mark span{font-weight:500;color:var(--muted);font-size:.9rem;margin-left:.35rem}
+.tabs{display:flex;gap:.2rem;margin-left:auto;flex-wrap:wrap;align-items:center}
+.tab{border:0;background:none;padding:.45rem .75rem;border-radius:8px;cursor:pointer;color:var(--muted);font-weight:600}
+.tab[aria-current="page"]{background:var(--brand-soft);color:var(--head)}
+main{max-width:1240px;margin:0 auto;padding:1.5rem 1.25rem 4rem}
+.grid{display:grid;gap:1.25rem}
+.g2{grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr))}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:1.2rem}
+.panel>h2,.panel>h3{margin-bottom:.6rem}
+.stack>*+*{margin-top:.8rem}
+.row{display:flex;gap:.6rem;align-items:center;flex-wrap:wrap}
+.between{justify-content:space-between}
+.btn{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--brand);background:var(--brand);color:var(--brand-ink);padding:.6rem 1.05rem;border-radius:10px;font-weight:700;cursor:pointer;text-decoration:none}
+.btn:hover{background:var(--brand-hover);border-color:var(--brand-hover)}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn.ghost:hover{border-color:var(--accent);color:var(--head);background:transparent}
+.btn.quiet:hover{background:none;color:var(--brand)}
+.btn.quiet{background:none;border-color:transparent;color:var(--accent);padding:.3rem .45rem}
+.btn.big{padding:.85rem 1.4rem;font-size:1.05rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+label.f{display:block;font-weight:600;font-size:.92rem;margin-bottom:.25rem}
+.input{width:100%;padding:.6rem .7rem;border:1px solid var(--line);border-radius:9px;background:var(--bg)}
+textarea.input{min-height:90px;resize:vertical}
+.field+.field{margin-top:.8rem}
+.pill{display:inline-block;padding:.12rem .55rem;border-radius:99px;font-size:.78rem;font-weight:600;background:var(--track);color:var(--ink)}
+.pill.ok{background:var(--brand-soft);color:var(--accent)}.pill.warn{background:var(--track);color:var(--muted)}.pill.bad{background:var(--danger-soft);color:var(--danger)}
+.banner{border-radius:14px;padding:.9rem 1.15rem;background:var(--signal-soft);border:1px solid var(--signal);display:flex;gap:1rem;align-items:center;flex-wrap:wrap;justify-content:space-between}
+.demo{background:#061A20;color:var(--muted);font-size:.85rem;border-bottom:1px solid var(--line)}
+.demo .bar-in{padding:.4rem 1.25rem}
+.demo select{background:var(--bg);color:var(--ink);border-radius:6px;border:0;padding:.2rem .4rem}
+.toast{position:fixed;left:50%;bottom:calc(1.25rem + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--brand);color:var(--brand-ink);padding:.6rem 1rem;border-radius:10px;font-weight:600;z-index:20;max-width:90vw}
+.empty{padding:2rem;text-align:center;color:var(--muted)}
+
+/* ---------- onboarding flow ---------- */
+.flow{max-width:880px;margin:0 auto}
+.stepper{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:2rem}
+.stepper div{border-top:5px solid var(--track);padding-top:.45rem;font-size:.85rem;color:var(--muted)}
+.stepper div.on{border-color:var(--brand);color:var(--head);font-weight:600}
+.stepper div.done{border-color:var(--deep)}
+.video{aspect-ratio:16/9;background:#061A20;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:grid;place-items:center;color:#cfd8d4}
+.video iframe,.video video{width:100%;height:100%;border:0;display:block}
+.tally{width:100%;height:1000px;border:1px solid var(--line);border-radius:14px;background:var(--surface)}
+.skool{display:grid;gap:1.5rem;grid-template-columns:1fr 1fr;align-items:center}
+@media (max-width:760px){.skool{grid-template-columns:1fr}}
+.perks{list-style:none;padding:0;margin:0}
+.perks li{padding:.6rem 0;border-top:1px solid var(--line)}
+.launch{min-height:60vh;display:grid;place-items:center;text-align:center}
+
+/* ---------- student dashboard ---------- */
+.top{display:grid;gap:1.25rem;grid-template-columns:minmax(260px,340px) minmax(0,1fr)}
+@media (max-width:860px){.top{grid-template-columns:1fr}}
+.donut-wrap{display:flex;gap:1.2rem;align-items:center}
+.donut{width:150px;height:150px;flex:none}
+.donut text{font-family:var(--display);font-weight:800;fill:var(--head)}
+.legend{list-style:none;margin:0;padding:0;font-size:.9rem}
+.legend li{display:flex;align-items:center;gap:.45rem;padding:.15rem 0}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.fnum{display:flex;align-items:baseline;gap:.6rem;flex-wrap:wrap}
+.fnum b{font-family:var(--display);font-weight:800;font-size:clamp(2.8rem,8vw,4.6rem);line-height:.9;color:var(--brand)}
+.fnum span{color:var(--muted);max-width:20ch}
+.months{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:4px;margin-top:.75rem}
+.mo{background:var(--track);border-radius:6px;padding:5px 3px 3px;min-height:78px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+.mo .ticks{display:flex;flex-wrap:wrap-reverse;justify-content:center;gap:2px}
+.mo i{width:6px;height:6px;border-radius:2px;background:var(--brand)}
+.mo.off{background:repeating-linear-gradient(135deg,var(--track) 0 6px,var(--surface) 6px 12px)}
+.mo small{font-size:.66rem;color:var(--muted);margin-top:3px}
+.mathline{font-size:.85rem;color:var(--muted);margin-top:.5rem}
+.mathline b{color:var(--head)}
+
+/* pipeline */
+.pipe{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin:1.5rem 0 1rem}
+.stage{position:relative;border:0;background:var(--panel);color:var(--ink);text-align:left;padding:.75rem 1.4rem .75rem 1.6rem;cursor:pointer;clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%,14px 50%);margin-right:-8px}
+.stage:first-child{clip-path:polygon(0 0,calc(100% - 14px) 0,100% 50%,calc(100% - 14px) 100%,0 100%);padding-left:1rem;border-radius:10px 0 0 10px}
+.stage b{display:block;font-family:var(--display);font-size:1rem;color:var(--head)}
+.stage .small{color:var(--muted)}
+.stage .fill{position:absolute;left:0;bottom:0;height:4px;background:var(--brand)}
+.stage.done{background:var(--brand-soft)}
+.stage.now{background:rgba(79,211,219,.24)}
+.stage[aria-pressed="true"]{outline:2px solid var(--brand);outline-offset:-2px;z-index:1}
+@media (max-width:640px){.pipe{grid-template-columns:1fr 1fr;gap:6px}.stage,.stage:first-child{clip-path:none;border-radius:10px;margin:0;padding-left:1rem}}
+
+/* kanban */
+.board{display:grid;grid-template-columns:repeat(3,minmax(240px,1fr));gap:1rem;overflow-x:auto;padding-bottom:.5rem}
+.col{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:.8rem;min-height:220px;transition:background .15s}
+.col.over{background:var(--brand-soft)}
+.col h3{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;font-size:.98rem}
+.col h3 .pill{background:var(--surface);color:var(--accent)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:.7rem .75rem;margin-bottom:.55rem;cursor:grab;box-shadow:0 1px 0 var(--line)}
+.card:active{cursor:grabbing}
+.card.dragging{opacity:.4}
+.card.is-done .t{text-decoration:line-through;color:var(--muted)}
+.card .t{font-weight:600;line-height:1.35;color:var(--head)}
+.card .n{font-size:.83rem;color:var(--muted);margin-top:.2rem}
+.card .acts{display:flex;gap:.25rem;justify-content:flex-end;margin-top:.45rem;flex-wrap:wrap}
+.card .acts button{border:1px solid var(--line);background:none;border-radius:7px;font-size:.78rem;padding:.2rem .5rem;cursor:pointer;color:var(--ink)}
+.card .acts button:hover{border-color:var(--accent);color:var(--head)}
+.card .acts button[data-to="done"]{border-color:var(--brand);color:var(--brand)}
+.tag{font-size:.72rem;font-weight:700;color:var(--accent)}
+.addcard{display:flex;gap:.4rem;margin-top:.4rem}
+.addcard input{flex:1;padding:.45rem .6rem;border:1px dashed var(--line);border-radius:9px;background:var(--surface)}
+.kv{display:grid;grid-template-columns:minmax(110px,180px) 1fr;gap:.35rem 1rem;font-size:.94rem}
+.kv dt{color:var(--muted)}.kv dd{margin:0;white-space:pre-wrap}
+.goal-list{list-style:none;padding:0;margin:.4rem 0 0}
+.goal-list li{display:flex;gap:.6rem;padding:.45rem 0;border-top:1px solid var(--line)}
+.goal-list input{accent-color:var(--brand);width:1.1rem;height:1.1rem;margin-top:.2rem}
+.ci{border-top:1px solid var(--line);padding:.7rem 0}.ci:first-child{border-top:0}
+
+/* staff */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.2rem}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:.85rem 1rem}
+.stat b{display:block;font-family:var(--display);font-size:1.8rem;line-height:1.1;color:var(--head)}
+.table-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+table{border-collapse:collapse;width:100%;min-width:780px}
+th,td{text-align:left;padding:.65rem .9rem;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:.8rem;color:var(--muted);font-weight:600}
+tbody tr.click{cursor:pointer}tbody tr.click:hover{background:var(--panel)}
+.meter{height:8px;background:var(--track);border-radius:99px;overflow:hidden;min-width:90px}.meter i{display:block;height:100%;background:var(--brand)}
+.filters{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.9rem}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:.3rem .8rem;cursor:pointer;font-weight:600;font-size:.86rem}
+.chip[aria-pressed="true"]{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.staffbar{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:.75rem 1rem;margin-bottom:1.2rem;display:flex;gap:.75rem;align-items:center;flex-wrap:wrap}
+.staffbar b{color:var(--head)}
+.bars{display:grid;gap:.45rem}
+.bars div{display:grid;grid-template-columns:minmax(110px,170px) 1fr 2rem;gap:.6rem;align-items:center;font-size:.9rem}
+@media (prefers-reduced-motion:no-preference){.mo i{animation:pop .35s both}@keyframes pop{from{transform:scale(0)}to{transform:none}}}
+</style>
+</head>
+<body>
+<div id="app"><main><p class="muted">Loading…</p></main></div>
+<script>
+"use strict";
+/* =====================================================================
+   CONFIG — fill these in after creating your Supabase project.
+   Leave SUPABASE_URL empty to run in demo mode (sample data, nothing saved).
+   ===================================================================== */
+const CONFIG = {
+  SUPABASE_URL: "https://hxgrfxkmtmkqrovtwpag.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh4Z3JmeGttdG1rcXJvdnR3cGFnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4MDI5MzUsImV4cCI6MjEwODM3ODkzNX0.m_F20PKxIyf9DV0_ZUl_w8VIlm4xUQb6hvpjReD-x9M",
+  TALLY_FORM_ID: "o9bePe",
+  SKOOL_URL: "https://www.skool.com/"
+};
+const DEMO = !CONFIG.SUPABASE_URL;
+
+/* ---------- program constants ---------- */
+const DAY = 86400000, WEEKS = 17;
+const MONTHS = [
+  {name:"Foundation",blurb:"Freedom Number, licenses, CV, recruiters"},
+  {name:"Positioning",blurb:"Credentialing, rates, negotiation, tax"},
+  {name:"Execution",blurb:"Sign, work the block, track the number"},
+  {name:"Freedom",blurb:"Lock in the season, share your story"}
+];
+const COLS = [["todo","To do"],["doing","In progress"],["done","Complete"]];
+const FIELDS = [
+  ["name","Full name","text","About"],["email","Email","text","About"],["specialty","Specialty","text","About"],
+  ["status","Where are you right now?","text","About"],["licenses","States you're currently licensed in","text","About"],
+  ["season","Which season of life are you in?","select:Escape|Wealth-building|Lifestyle|Business-building|Legacy|Transition","Season"],
+  ["success12","What would success look like 12 months from now?","long","Season"],
+  ["income","Desired clinical income for the next 12 months (USD)","number","Target"],
+  ["months","Number of months you plan to work","number","Target"],["timeOff","Planned time off","text","Target"],
+  ["rate","Target hourly rate (USD)","number","Target"],["shiftLength","Average shift length (hours)","number","Target"],
+  ["scheduleStructure","Preferred schedule structure","text","Schedule"],["scheduleDesc","Describe your ideal schedule","long","Schedule"],
+  ["bottleneck","What is the single biggest obstacle to executing this plan?","text","Bottleneck"],
+  ["bottleneckDetail","Tell us more about that bottleneck","long","Bottleneck"],
+  ["idealWeek","One year from now, how does an ideal week look?","long","Ideal life"],
+  ["fiveYear","Five years from now, if everything went to plan, what does life look like?","long","Ideal life"],
+  ["tenYear","Ten years from now, what legacy are you building?","long","Ideal life"],
+  ["goal90","One major goal for the next 90 days","text","90-day plan"],
+  ["action1","Action 1","text","90-day plan"],["action2","Action 2","text","90-day plan"],["action3","Action 3","text","90-day plan"],
+  ["targetDate","Target completion date","text","90-day plan"],
+  ["heardFrom","How did you first hear about Locumos?","text","Marketing"],
+  ["contentPiece","Which piece of content made you decide to join?","long","Marketing"],
+  ["almostStopped","What almost stopped you from joining?","long","Marketing"],
+  ["whyJoined","In one sentence, why did you join Velocity?","text","Marketing"]
+];
+const norm = s => String(s||"").toLowerCase().replace(/[’']/g,"'").replace(/\s+/g," ").trim();
+const LABEL_TO_KEY = Object.fromEntries(FIELDS.map(f=>[norm(f[1]),f[0]]));
+
+/* ---------- helpers ---------- */
+const esc = s => String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num = v => {const n=parseFloat(String(v??"").replace(/[^0-9.]/g,""));return isFinite(n)?n:0};
+const money = n => "$"+Math.round(n).toLocaleString("en-US");
+const now = () => new Date().toISOString();
+const fmtDate = t => t?new Date(t).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"}):"—";
+const uuid = () => (crypto.randomUUID?crypto.randomUUID():Math.random().toString(36).slice(2)+Date.now());
+function toast(m){const t=document.createElement("div");t.className="toast";t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),2800)}
+function pos(p){const days=Math.max(0,Math.floor((Date.now()-new Date(p?.start_date||Date.now()))/DAY));return {days,week:Math.min(WEEKS,Math.floor(days/7)+1),month:Math.min(4,Math.floor(days/30)+1)}}
+function freedom(o){const income=num(o?.income),rate=num(o?.rate),len=num(o?.shiftLength),months=num(o?.months);if(!income||!rate||!len||!months)return null;const hours=income/rate,shifts=hours/len;return {income,rate,len,months,hours,shifts,perMonth:shifts/months}}
+function counts(tasks){const c={todo:0,doing:0,done:0};tasks.forEach(t=>c[t.status]++);const total=tasks.length;return {...c,total,pct:total?Math.round(c.done/total*100):0}}
+function firstName(p){const n=(p?.full_name||p?.onboarding?.name||"").replace(/^dr\.?\s*/i,"").trim();return n.split(" ")[0]||""}
+function nameOf(p){return p?.full_name||p?.onboarding?.name||p?.email||"New member"}
+function videoEmbed(url){if(!url)return null;let m;
+  if((m=url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([\w-]{6,})/)))return "https://www.youtube-nocookie.com/embed/"+m[1];
+  if((m=url.match(/loom\.com\/(?:share|embed)\/(\w+)/)))return "https://www.loom.com/embed/"+m[1];
+  if((m=url.match(/vimeo\.com\/(?:video\/)?(\d+)/)))return "https://player.vimeo.com/video/"+m[1];
+  if(/\.(mp4|webm|mov)(\?|$)/i.test(url))return "file:"+url;return null}
+function videoBlock(url,empty){const e=videoEmbed(url);
+  if(e&&e.startsWith("file:"))return `<div class="video"><video controls playsinline preload="metadata" src="${esc(e.slice(5))}"></video></div>`;
+  if(e)return `<div class="video"><iframe src="${esc(e)}" title="Video" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
+  return `<div class="video"><p style="padding:1rem;text-align:center">${esc(empty)}</p></div>`}
+
+/* =====================================================================
+   DATA LAYER — one interface, two backends (Supabase or in-memory demo)
+   ===================================================================== */
+function supabaseApi(){
+  const sb = supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+  const ok = r => {if(r.error)throw r.error;return r.data};
+  return {
+    demo:false,
+    async currentUser(){const {data}=await sb.auth.getSession();return data.session?.user||null},
+    onAuth(cb){sb.auth.onAuthStateChange((_e,s)=>cb(s?.user||null))},
+    async signIn(email){ok(await sb.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}}))},
+    async signOut(){await sb.auth.signOut()},
+    async profile(id){return ok(await sb.from("profiles").select("*").eq("id",id).single())},
+    async profiles(){return ok(await sb.from("profiles").select("*").order("created_at",{ascending:false}))},
+    async updateProfile(id,patch){return ok(await sb.from("profiles").update(patch).eq("id",id).select().single())},
+    async tasks(studentId){let q=sb.from("tasks").select("*").order("month").order("position");if(studentId)q=q.eq("student_id",studentId);return ok(await q)},
+    async addTasks(rows){return ok(await sb.from("tasks").insert(rows).select())},
+    async updateTask(id,patch){return ok(await sb.from("tasks").update(patch).eq("id",id).select().single())},
+    async deleteTask(id){ok(await sb.from("tasks").delete().eq("id",id))},
+    async checkins(studentId){let q=sb.from("checkins").select("*").order("week",{ascending:false});if(studentId)q=q.eq("student_id",studentId);return ok(await q)},
+    async saveCheckin(row){return ok(await sb.from("checkins").upsert(row,{onConflict:"student_id,week"}).select().single())},
+    async replyCheckin(id,reply){ok(await sb.from("checkins").update({reply,replied_at:now()}).eq("id",id))},
+    async settings(){const rows=ok(await sb.from("settings").select("*"));return Object.fromEntries(rows.map(r=>[r.key,r.value]))},
+    async saveSettings(obj){ok(await sb.from("settings").upsert(Object.entries(obj).map(([key,value])=>({key,value}))))},
+    async templates(){return ok(await sb.from("task_templates").select("*").order("month").order("position"))},
+    async saveTemplates(rows){ok(await sb.from("task_templates").delete().gte("month",0));if(rows.length)ok(await sb.from("task_templates").insert(rows))},
+    async note(id){const r=await sb.from("staff_notes").select("text").eq("student_id",id).maybeSingle();return r.data?.text||""},
+    async saveNote(id,text){ok(await sb.from("staff_notes").upsert({student_id:id,text,updated_at:now()}))},
+    async upload(userId,file){const path=`${userId}/${Date.now()}-${file.name.replace(/[^\w.]/g,"_")}`;ok(await sb.storage.from("testimonials").upload(path,file));return path},
+    async fileUrl(path){const r=await sb.storage.from("testimonials").createSignedUrl(path,3600);return r.data?.signedUrl||""}
+  };
+}
+
+function demoApi(){
+  const D = {profiles:[],tasks:[],checkins:[],notes:{},user:null,
+    settings:{welcomeVideoUrl:"",welcomeText:"Most physicians design their life around their job. Over the next four months you’ll do the opposite: decide what your life should look like, then build the clinical schedule that pays for it.",skoolUrl:CONFIG.SKOOL_URL,tallyFormId:CONFIG.TALLY_FORM_ID,testimonialGuideVideoUrl:""},
+    templates:[]};
+  const TPL=[["Introduce yourself in the Skool community","Join your first call"],[],[],[]];
+  TPL.forEach((l,i)=>l.forEach((title,k)=>D.templates.push({id:uuid(),month:i+1,title,position:k+1})));
+  const clone=x=>JSON.parse(JSON.stringify(x));
+  function mkStudent(id,daysAgo,step,ob,progress){
+    const p={id,email:id+"@example.com",full_name:ob?.name||null,role:"student",start_date:new Date(Date.now()-daysAgo*DAY).toISOString(),onboarding_step:step,onboarding:ob||{},tally_submitted_at:ob?now():null,skool_joined_at:step>=3?now():null,testimonial:{},testimonial_requested:false,created_at:now()};
+    D.profiles.push(p);
+    D.templates.forEach(t=>D.tasks.push({id:uuid(),student_id:id,month:t.month,title:t.title,note:null,status:"todo",position:t.position,source:"program",done_at:null}));
+    if(step>=3)ADDED.forEach(([month,title],k)=>D.tasks.push({id:uuid(),student_id:id,month,title,note:null,status:"todo",position:10+k,source:"coach",done_at:null}));
+    const mine=D.tasks.filter(t=>t.student_id===id).sort((a,b)=>a.month-b.month||a.position-b.position);
+    mine.slice(0,Math.floor(mine.length*progress)).forEach(t=>{t.status="done";t.done_at=now()});
+    const nx=mine.find(t=>t.status==="todo");if(nx&&progress>0)nx.status="doing";
+    return p;
+  }
+  const ADDED=[[1,"Update your CV for locums"],[1,"Start one new state license application"],[1,"Reach out to 3 locums recruiters"],[2,"Submit your credentialing packets"],[2,"Get rate quotes from at least 3 agencies"],[2,"Book a call with a physician-focused CPA"],[3,"Sign your first locums contract"],[3,"Compare actual income against your Freedom Number"],[4,"Lock in your next 3 months of shifts"],[4,"Share your Velocity story"]];
+  const OB={name:"Dr. Sarah Chen",email:"sarah@example.com",specialty:"Emergency Medicine",status:"Full-time W2, haven't started locums",season:"Escape",success12:"Out of my W2 contract, working 10 shifts a month at $325+/hr, home for school pickup three days a week.",income:"400000",months:"10",timeOff:"July and two weeks at Christmas",rate:"350",shiftLength:"12",scheduleStructure:"One block per month, Days only",scheduleDesc:"One 10-day block each month, the rest at home.",bottleneck:"Need more state licenses",goal90:"Sign my first locums contract at $325+/hr",action1:"Apply for Florida and Arizona licenses",action2:"Talk to 3 recruiters",action3:"Give notice at my W2",targetDate:"Jan 31, 2027",heardFrom:"Instagram",contentPiece:"Ali’s reel on negotiating a $50/hr raise",almostStopped:"Wasn’t sure I could leave W2 mid-contract",whyJoined:"I want my weekdays back."};
+  mkStudent("new-student",0,0,null,0);
+  mkStudent("sarah",38,3,OB,.42);
+  mkStudent("marcus",64,3,{...OB,name:"Dr. Marcus Reid",specialty:"Hospitalist",season:"Wealth-building",income:"520000",rate:"300",months:"11",heardFrom:"Podcast",contentPiece:"The Locums Freedom podcast episode on S-corps",bottleneck:"Need a tax structure"},.55);
+  mkStudent("priya",112,3,{...OB,name:"Dr. Priya Nair",specialty:"Anesthesia",season:"Lifestyle",income:"300000",rate:"420",months:"8",heardFrom:"Referred by a colleague",contentPiece:"A friend in the program showed me her dashboard",bottleneck:"Family concerns"},.85);
+  D.profiles.find(p=>p.id==="priya").testimonial_requested=true;
+  D.checkins.push({id:uuid(),student_id:"sarah",week:5,wins:"Florida license submitted. Two recruiter calls booked.",shifts:0,earned:0,blocker:"Not sure how to compare agency rates.",confidence:7,need_help:true,reply:null,created_at:now()});
+  D.checkins.push({id:uuid(),student_id:"marcus",week:9,wins:"Signed with an agency at $310/hr.",shifts:4,earned:14880,blocker:"",confidence:9,need_help:false,reply:"Huge. Now let’s get the S-corp done.",created_at:now()});
+  D.profiles.push({id:"ali",email:"ali@locumos.com",full_name:"Ali",role:"admin",start_date:now(),onboarding_step:3,onboarding:{},testimonial:{},created_at:now()});
+  D.profiles.push({id:"coach-jo",email:"jo@locumos.com",full_name:"Jo (coach)",role:"coach",start_date:now(),onboarding_step:3,onboarding:{},testimonial:{},created_at:now()});
+  const P=x=>Promise.resolve(clone(x));
+  return {
+    demo:true,D,
+    setUser(id){D.user=id?{id,email:D.profiles.find(p=>p.id===id)?.email}:null},
+    async currentUser(){return D.user},onAuth(){},async signIn(){},async signOut(){D.user=null},
+    profile:id=>P(D.profiles.find(p=>p.id===id)),
+    profiles:()=>P(D.profiles),
+    async updateProfile(id,patch){const p=D.profiles.find(x=>x.id===id);Object.assign(p,clone(patch));return clone(p)},
+    tasks:sid=>P(D.tasks.filter(t=>!sid||t.student_id===sid).sort((a,b)=>a.month-b.month||a.position-b.position)),
+    async addTasks(rows){const r=rows.map(x=>({id:uuid(),note:null,status:"todo",done_at:null,created_at:now(),...x}));D.tasks.push(...r);return clone(r)},
+    async updateTask(id,patch){const t=D.tasks.find(x=>x.id===id);Object.assign(t,patch);return clone(t)},
+    async deleteTask(id){D.tasks=D.tasks.filter(t=>t.id!==id)},
+    checkins:sid=>P(D.checkins.filter(c=>!sid||c.student_id===sid).sort((a,b)=>b.week-a.week)),
+    async saveCheckin(row){let c=D.checkins.find(x=>x.student_id===row.student_id&&x.week===row.week);if(c)Object.assign(c,row);else{c={id:uuid(),created_at:now(),...row};D.checkins.push(c)}return clone(c)},
+    async replyCheckin(id,reply){Object.assign(D.checkins.find(c=>c.id===id),{reply,replied_at:now()})},
+    settings:()=>P(D.settings),async saveSettings(o){Object.assign(D.settings,o)},
+    templates:()=>P(D.templates),async saveTemplates(rows){D.templates=rows.map(r=>({id:uuid(),...r}))},
+    async note(id){return D.notes[id]||""},async saveNote(id,t){D.notes[id]=t},
+    async upload(){throw new Error("Uploads are off in demo mode")},async fileUrl(){return ""}
+  };
+}
+
+/* =====================================================================
+   APP STATE
+   ===================================================================== */
+const S = {api:null,user:null,me:null,settings:{},view:null,month:null,editing:false,
+  my:{tasks:[],checkins:[]},
+  staff:{profiles:[],tasks:[],checkins:[],filter:"all",templates:[]},
+  sel:null,selTab:"board",selData:{tasks:[],checkins:[],note:""},
+  dragId:null,flowSkoolClicked:false,launching:false,signInSent:false};
+const isStaff = () => S.me && (S.me.role==="coach"||S.me.role==="admin");
+const isAdmin = () => S.me?.role==="admin";
+
+async function run(fn,okMsg){try{const r=await fn();if(okMsg)toast(okMsg);return r??true}catch(e){console.error(e);toast(e?.message?("Didn’t save: "+e.message):"Didn’t save. Try again.");return false}}
+
+async function boot(){
+  if(!DEMO&&!window.supabase){document.getElementById("app").innerHTML=`<main><p>Couldn’t load the database library. Check your connection and reload.</p></main>`;return}
+  S.api = DEMO ? demoApi() : supabaseApi();
+  if(DEMO)S.api.setUser("new-student");
+  S.api.onAuth(u=>{if(u?.id!==S.user?.id)loadUser(u)});
+  await loadUser(await S.api.currentUser());
+}
+async function loadUser(u){
+  S.user=u;S.me=null;
+  if(!u){render();return}
+  try{
+    S.me=await S.api.profile(u.id);
+    S.settings=await S.api.settings();
+  }catch(e){console.error(e);S.me=null;render();toast("Couldn’t load your profile.");return}
+  if(isStaff()){S.view="students";await loadStaff()}
+  else{S.view="board";await loadMine()}
+  render();
+}
+async function loadMine(){
+  const [tasks,checkins,me]=await Promise.all([S.api.tasks(S.me.id),S.api.checkins(S.me.id),S.api.profile(S.me.id)]);
+  S.my={tasks,checkins};S.me=me;if(!S.month)S.month=pos(me).month;
+}
+async function loadStaff(){
+  const [profiles,tasks,checkins,templates]=await Promise.all([S.api.profiles(),S.api.tasks(),S.api.checkins(),S.api.templates()]);
+  S.staff={...S.staff,profiles,tasks,checkins,templates};
+}
+async function loadSel(){
+  const id=S.sel;const [p,tasks,checkins,note]=await Promise.all([S.api.profile(id),S.api.tasks(id),S.api.checkins(id),S.api.note(id)]);
+  S.selData={p,tasks,checkins,note};
+}
+async function refresh(){if(isStaff()){await loadStaff();if(S.sel)await loadSel()}else await loadMine();render()}
+
+/* =====================================================================
+   RENDER
+   ===================================================================== */
+function render(){
+  const app=document.getElementById("app");
+  const demoBar=DEMO?`<div class="demo"><div class="bar-in"><b>Demo mode</b><span>Sample data, nothing is saved.</span>
+    <label class="row" style="margin-left:auto;gap:.4rem">View as <select data-act="demo-user">
+      ${[["new-student","New doctor (onboarding flow)"],["sarah","Doctor in month 2"],["priya","Doctor in month 4"],["ali","Admin (Ali)"],["coach-jo","Coach"]].map(([v,l])=>`<option value="${v}" ${S.user?.id===v?"selected":""}>${l}</option>`).join("")}
+    </select></label></div></div>`:"";
+  if(!S.user){app.innerHTML=demoBar+signInView();return}
+  if(!S.me){app.innerHTML=demoBar+`<main><p class="muted">Loading your profile…</p></main>`;return}
+  if(!isStaff()&&(S.me.onboarding_step<3||S.launching)){app.innerHTML=demoBar+flowView();return}
+  const tabs=isStaff()
+    ?[["students","Students"],["insights","Insights"],["templates","Starting checklist"],["settings","Settings"],...(isAdmin()?[["team","Team & roles"]]:[])]
+    :[["board","My board"],["checkin","Weekly check-in"],["plan","My plan"],...(testimonialOpen(S.me)?[["story","Share your story"]]:[])];
+  const body=isStaff()?staffView():studentPortal({p:S.me,tasks:S.my.tasks,checkins:S.my.checkins,staff:false,tab:S.view});
+  app.innerHTML=demoBar+`<header class="bar"><div class="bar-in"><div class="mark">Locumos Velocity<span>${isStaff()?(isAdmin()?"Admin":"Coach"):"Member portal"}</span></div>
+    <nav class="tabs" aria-label="Sections">${tabs.map(([k,l])=>`<button class="tab" data-act="nav" data-v="${k}" ${S.view===k?'aria-current="page"':""}>${l}</button>`).join("")}
+    <button class="tab" data-act="signout">Sign out</button></nav></div></header><main>${body}</main>`;
+}
+
+/* ---------- sign in ---------- */
+function signInView(){
+  return `<main><div class="panel stack" style="max-width:460px;margin:4rem auto">
+    <h1 style="font-size:2rem">Locumos Velocity</h1>
+    ${S.signInSent?`<p>Check your email. We sent a sign-in link to <b>${esc(S.signInSent)}</b>. Open it on this device.</p><button class="btn ghost" data-act="signin-reset">Use a different email</button>`
+    :`<p class="muted">Enter the email you joined with. We’ll send you a one-click sign-in link, no password needed.</p>
+    <form data-form="signin" class="stack"><input class="input" type="email" name="email" required placeholder="you@example.com" autocomplete="email"><button class="btn" type="submit">Send my sign-in link</button></form>`}
+  </div></main>`;
+}
+
+/* ---------- onboarding flow: video → tally → skool → portal ---------- */
+function flowView(){
+  const step=S.me.onboarding_step,st=S.settings;
+  if(S.launching)return `<main><div class="launch"><div class="stack"><h1>You’re all set${firstName(S.me)?", Dr. "+esc(firstName(S.me)):""}.</h1><p class="muted">Opening your portal…</p></div></div></main>`;
+  const labels=["Welcome from Ali","Your Freedom Number","Join the community"];
+  const stepper=`<div class="stepper" aria-label="Step ${step+1} of 3">${labels.map((l,i)=>`<div class="${i<step?"done":i===step?"on":""}">Step ${i+1}<br>${l}</div>`).join("")}</div>`;
+  let body="";
+  if(step===0){
+    body=`<div class="stack">${videoBlock(st.welcomeVideoUrl,"Ali’s welcome video goes here.")}
+      <h1>Welcome to Velocity.</h1>
+      <p style="max-width:62ch">${esc(st.welcomeText||"")}</p>
+      <p class="muted small">Next you’ll build your Freedom Number, then join the community. About 20 minutes in total.</p>
+      <div><button class="btn big" data-act="flow-next" data-to="1">Continue</button></div></div>`;
+  }else if(step===1){
+    const fid=esc(st.tallyFormId||CONFIG.TALLY_FORM_ID),mid=encodeURIComponent(S.me.id);
+    const done=!!S.me.tally_submitted_at;
+    body=`<div class="stack"><h1>Build your Freedom Number</h1>
+      <p class="muted">About 15 minutes. Your answers become your dashboard, so be specific.</p>
+      <iframe class="tally" src="https://tally.so/embed/${fid}?alignLeft=1&hideTitle=1&transparentBackground=1&member_id=${mid}" title="Freedom Number form" loading="lazy"></iframe>
+      <div class="panel row between"><span class="small muted">${done?"Got it. Your answers are saved.":`Form not loading? <a href="https://tally.so/r/${fid}?member_id=${mid}" target="_blank" rel="noopener">Open it in a new tab</a>.`}</span>
+      <div class="row">${done?"":`<button class="btn ghost" data-act="tally-manual">I’ve submitted it</button>`}<button class="btn big" data-act="flow-next" data-to="2" ${done?"":"disabled"}>Continue</button></div></div></div>`;
+  }else{
+    const url=st.skoolUrl||CONFIG.SKOOL_URL;
+    body=`<div class="skool"><div class="stack"><h1>Join the Velocity community on Skool</h1>
+      <p>This is where the live calls, recordings and other doctors in your cohort are. Most of the wins happen here.</p>
+      <ul class="perks"><li><b>Weekly live Q&amp;A</b> with Ali and the coaches</li><li><b>Contract and rate reviews</b> from doctors who’ve done it</li><li><b>Every training</b>, recorded and searchable</li></ul></div>
+      <div class="panel stack"><h2>Two quick steps</h2>
+      <p>1. Request to join with the same email you used here.</p>
+      <a class="btn big" href="${esc(url)}" target="_blank" rel="noopener" data-act="skool-open">Open Skool</a>
+      <p>2. Come back and continue to your portal.</p>
+      <button class="btn big ghost" data-act="flow-finish" ${S.flowSkoolClicked?"":"disabled"}>I’ve joined. Take me to my portal</button>
+      ${S.flowSkoolClicked?"":`<p class="small muted">The button unlocks after you open Skool.</p>`}</div></div>`;
+  }
+  return `<main><div class="flow">${stepper}${body}${step>0?`<p style="margin-top:1.5rem"><button class="btn quiet" data-act="flow-next" data-to="${step-1}">Back</button></p>`:""}</div></main>`;
+}
+
+/* ---------- student portal (also used by staff "view as student") ---------- */
+function testimonialOpen(p){return pos(p).month>=4||!!p.testimonial_requested}
+function studentPortal(ctx){
+  if(ctx.tab==="checkin")return checkinView(ctx);
+  if(ctx.tab==="plan")return planView(ctx);
+  if(ctx.tab==="story")return storyView(ctx);
+  return boardView(ctx);
+}
+function donut(c){
+  const seg=(v,color,off)=>v?`<circle r="15.915" cx="21" cy="21" fill="none" stroke="${color}" stroke-width="6" stroke-dasharray="${v} ${100-v}" stroke-dashoffset="${25-off}"></circle>`:"";
+  const t=c.total||1,d=c.done/t*100,g=c.doing/t*100;
+  return `<svg class="donut" viewBox="0 0 42 42" role="img" aria-label="${c.pct}% complete"><circle r="15.915" cx="21" cy="21" fill="none" stroke="var(--track)" stroke-width="6"></circle>
+    ${seg(d,"var(--brand)",0)}${seg(g,"var(--deep)",d)}<text x="21" y="23.5" text-anchor="middle" font-size="8">${c.pct}%</text></svg>`;
+}
+function freedomPanel(o){
+  const f=freedom(o);
+  if(!f)return `<div class="panel"><h2>Your Freedom Number</h2><p class="muted">Add your income goal, rate, shift length and months worked in “My plan” to calculate it.</p></div>`;
+  const per=Math.round(f.perMonth*10)/10,ticks=Math.round(f.perMonth),worked=Math.min(12,Math.round(f.months)),d=new Date();
+  return `<div class="panel"><div class="fnum"><b>${per}</b><span>shifts a month for ${worked} months funds your year</span></div>
+    <div class="months" role="img" aria-label="${worked} working months at about ${ticks} shifts each">${Array.from({length:12},(_,i)=>{const on=i<worked,m=new Date(d.getFullYear(),d.getMonth()+i,1);
+      return `<div class="mo ${on?"":"off"}"><div class="ticks">${on?Array.from({length:Math.min(ticks,31)},(_,k)=>`<i style="animation-delay:${i*25+k*10}ms"></i>`).join(""):""}</div><small>${m.toLocaleDateString("en-US",{month:"short"})}</small></div>`}).join("")}</div>
+    <p class="mathline">${money(f.income)} ÷ $${f.rate}/hr = <b>${Math.round(f.hours).toLocaleString()} hrs</b> ÷ ${f.len}h = <b>${Math.round(f.shifts)} shifts/yr</b> ÷ ${worked} = <b>${per}/mo</b></p></div>`;
+}
+function boardView(ctx){
+  const {p,tasks}=ctx,P=pos(p),all=counts(tasks);
+  const month=ctx.staff?(S.selMonth||P.month):(S.month||P.month);
+  const mt=tasks.filter(t=>t.month===month);
+  const thisWeek=ctx.checkins.some(c=>c.week===P.week);
+  const banners=[];
+  if(!ctx.staff&&!thisWeek)banners.push(`<div class="banner"><span>Your week ${P.week} check-in is due. Two minutes.</span><button class="btn" data-act="nav" data-v="checkin">Check in</button></div>`);
+  if(!ctx.staff&&testimonialOpen(p)&&!p.testimonial?.submitted_at)banners.push(`<div class="banner"><span><b>You made it to month ${P.month}.</b> Would you share your story with the next doctor who’s where you were?</span><button class="btn" data-act="nav" data-v="story">Share your story</button></div>`);
+  const pipe=MONTHS.map((m,i)=>{const n=i+1,c=counts(tasks.filter(t=>t.month===n));const state=n<P.month?"done":n===P.month?"now":"";
+    return `<button class="stage ${state}" data-act="month" data-m="${n}" aria-pressed="${n===month}"><b>Month ${n} · ${m.name}</b><span class="small">${c.done}/${c.total} done${n===P.month?" · you are here":""}</span><span class="fill" style="width:${c.pct}%"></span></button>`}).join("");
+  const col=([k,l])=>{const items=mt.filter(t=>t.status===k).sort((a,b)=>a.position-b.position);
+    return `<section class="col" data-drop="${k}" aria-label="${l}"><h3>${l}<span class="pill">${items.length}</span></h3>
+      ${items.map(t=>card(t,ctx)).join("")||`<p class="small muted" style="padding:.4rem">${k==="done"?"Drag finished tasks here.":k==="todo"&&!mt.length?(ctx.staff?"No tasks this month yet.":"Nothing here yet. Ali will add tasks as you go."):"Nothing here."}</p>`}
+      ${k==="todo"&&ctx.staff?`<form class="addcard" data-form="add-card" data-month="${month}"><input name="title" placeholder="Add a task for this doctor only" aria-label="New task"><button class="btn ghost" type="submit">Add</button></form>`:""}</section>`};
+  return `<div class="stack">
+    ${ctx.staff?"":`<div class="row between"><div><h1>${firstName(p)?"Dr. "+esc(firstName(p))+"’s board":"Your board"}</h1><p class="muted">Month ${P.month} of 4 · week ${P.week} of ${WEEKS}</p></div></div>`}
+    ${banners.join("")}
+    <div class="top">
+      <div class="panel"><h2>Program progress</h2><div class="donut-wrap">${donut(all)}
+        <ul class="legend"><li><i style="background:var(--brand)"></i>${all.done} complete</li><li><i style="background:var(--deep)"></i>${all.doing} in progress</li><li><i style="background:var(--track)"></i>${all.todo} to do</li></ul></div></div>
+      ${freedomPanel(p.onboarding)}
+    </div>
+    <div class="pipe" role="group" aria-label="Program months">${pipe}</div>
+    <div class="row between"><h2>Month ${month}: ${MONTHS[month-1].name}</h2><span class="small muted">Drag cards between columns, or use the buttons.</span></div>
+    <div class="board">${COLS.map(col).join("")}</div>
+    <div class="grid g2">${goalsPanel(ctx)}<div class="panel"><h2>Recent check-ins</h2>${ctx.checkins.length?ctx.checkins.slice(0,3).map(checkinCard).join(""):`<p class="muted">No check-ins yet.</p>`}</div></div>
+  </div>`;
+}
+function card(t,ctx){
+  const i=COLS.findIndex(c=>c[0]===t.status);
+  const back=i>0?COLS[i-1]:null,fwd=i<2?COLS[i+1]:null;
+  const canDelete=ctx.staff;
+  return `<article class="card ${t.status==="done"?"is-done":""}" draggable="true" data-card="${t.id}">
+    ${t.source==="coach"&&!ctx.staff&&!t.done_at&&Date.now()-new Date(t.created_at||0)<5*DAY?`<div class="tag">New from Ali</div>`:""}
+    <div class="t">${esc(t.title)}</div>${t.note?`<div class="n">${esc(t.note)}</div>`:""}
+    <div class="acts">${back?`<button data-act="move" data-id="${t.id}" data-to="${back[0]}">← ${back[1]}</button>`:""}${fwd?`<button data-act="move" data-id="${t.id}" data-to="${fwd[0]}">${fwd[0]==="done"?"Mark complete":"Start"} →</button>`:""}
+    ${canDelete?`<button data-act="del-card" data-id="${t.id}" aria-label="Delete task">Delete</button>`:""}</div></article>`;
+}
+function goalsPanel(ctx){
+  const o=ctx.p.onboarding||{},g=o._goalChecks||{};
+  const acts=["action1","action2","action3"].filter(k=>o[k]);
+  return `<div class="panel stack"><h2>90-day goal</h2>
+    <p><b>${esc(o.goal90||"Not set yet")}</b>${o.targetDate?`<br><span class="small muted">Target: ${esc(o.targetDate)}</span>`:""}</p>
+    ${acts.length?`<ul class="goal-list">${acts.map(k=>`<li><input type="checkbox" id="g-${k}" data-act="goal" data-k="${k}" ${g[k]?"checked":""}><label for="g-${k}" style="${g[k]?"text-decoration:line-through;color:var(--muted)":""}">${esc(o[k])}</label></li>`).join("")}</ul>`:""}
+    <dl class="kv small"><dt>Season</dt><dd>${esc(o.season||"—")}</dd><dt>In 12 months</dt><dd>${esc(o.success12||"—")}</dd><dt>Bottleneck</dt><dd>${esc(o.bottleneck||"—")}</dd></dl></div>`;
+}
+function checkinCard(c){
+  return `<div class="ci"><div class="row between"><b>Week ${c.week}</b><span class="small muted">${fmtDate(c.created_at)}</span></div>
+  <dl class="kv small" style="margin-top:.35rem"><dt>Wins</dt><dd>${esc(c.wins||"—")}</dd><dt>Shifts / earned</dt><dd>${esc(c.shifts||0)} · ${money(num(c.earned))}</dd>
+  <dt>Stuck on</dt><dd>${esc(c.blocker||"—")}</dd><dt>Confidence</dt><dd>${esc(c.confidence||"—")}/10 ${c.need_help?'<span class="pill bad">Asked for help</span>':""}</dd>
+  ${c.reply?`<dt>Coach reply</dt><dd>${esc(c.reply)}</dd>`:""}</dl></div>`;
+}
+function checkinView(ctx){
+  const P=pos(ctx.p),cur=ctx.checkins.find(c=>c.week===P.week)||{};
+  if(ctx.staff)return `<div class="panel"><h2>Weekly check-ins</h2>${ctx.checkins.length?ctx.checkins.map(c=>checkinCard(c)+`<form class="row" data-form="reply" data-id="${c.id}" style="margin-bottom:.8rem"><input class="input" style="flex:1" name="reply" placeholder="Reply to Dr. ${esc(firstName(ctx.p))}" value="${esc(c.reply||"")}"><button class="btn ghost">Send reply</button></form>`).join(""):`<p class="muted">No check-ins yet.</p>`}</div>`;
+  return `<div class="grid g2"><form class="panel stack" data-form="checkin"><h1 style="font-size:2rem">Week ${P.week} check-in</h1><p class="muted">Your coach reads every one.</p>
+    <div class="field"><label class="f" for="w">What moved forward this week?</label><textarea class="input" id="w" name="wins">${esc(cur.wins||"")}</textarea></div>
+    <div class="row"><div style="flex:1"><label class="f" for="sh">Shifts worked</label><input class="input" id="sh" name="shifts" type="number" min="0" value="${esc(cur.shifts??"")}"></div>
+    <div style="flex:1"><label class="f" for="er">Clinical income earned ($)</label><input class="input" id="er" name="earned" type="number" min="0" value="${esc(cur.earned??"")}"></div></div>
+    <div class="field"><label class="f" for="bl">Where are you stuck?</label><textarea class="input" id="bl" name="blocker">${esc(cur.blocker||"")}</textarea></div>
+    <div class="field"><label class="f" for="cf">Confidence in your plan (1–10)</label><input class="input" id="cf" name="confidence" type="number" min="1" max="10" value="${esc(cur.confidence??"")}"></div>
+    <label class="row"><input type="checkbox" name="need_help" ${cur.need_help?"checked":""}> I’d like the team to reach out this week</label>
+    <div><button class="btn" type="submit">${cur.id?"Update check-in":"Submit check-in"}</button></div></form>
+    <div class="panel"><h2>Past check-ins</h2>${ctx.checkins.length?ctx.checkins.map(checkinCard).join(""):`<p class="muted">Nothing yet.</p>`}</div></div>`;
+}
+function planView(ctx){
+  const o=ctx.p.onboarding||{};const secs=[...new Set(FIELDS.map(f=>f[3]))].filter(s=>ctx.staff||s!=="Marketing");
+  if(!S.editing)return `<div class="stack"><div class="row between"><h1 style="font-size:2rem">${ctx.staff?"Onboarding answers":"My plan"}</h1><button class="btn ghost" data-act="edit">Edit answers</button></div>
+    ${!ctx.p.tally_submitted_at?`<div class="banner"><span>No Freedom Number submission yet.</span></div>`:""}
+    <div class="grid g2">${secs.map(sec=>`<div class="panel"><h2>${esc(sec)}</h2><dl class="kv">${FIELDS.filter(f=>f[3]===sec).map(f=>`<dt>${esc(f[1])}</dt><dd>${esc(o[f[0]]||"—")}</dd>`).join("")}</dl></div>`).join("")}</div></div>`;
+  return `<form class="panel stack" data-form="answers"><h2>Edit answers</h2>${secs.map(sec=>`<h3 style="margin-top:1rem">${esc(sec)}</h3>${FIELDS.filter(f=>f[3]===sec).map(([k,l,type])=>{const v=o[k]??"",id="a-"+k;
+    const inp=type==="long"?`<textarea class="input" id="${id}" name="${k}">${esc(v)}</textarea>`:type.startsWith("select:")?`<select class="input" id="${id}" name="${k}"><option value="">—</option>${type.slice(7).split("|").map(x=>`<option ${x===v?"selected":""}>${x}</option>`).join("")}</select>`:`<input class="input" id="${id}" name="${k}" value="${esc(v)}">`;
+    return `<div class="field"><label class="f" for="${id}">${esc(l)}</label>${inp}</div>`}).join("")}`).join("")}
+    <div class="row"><button class="btn" type="submit">Save answers</button><button class="btn ghost" type="button" data-act="edit">Cancel</button></div></form>`;
+}
+function storyView(ctx){
+  const t=ctx.p.testimonial||{},st=S.settings;
+  if(ctx.staff)return `<div class="panel stack"><h2>Testimonial</h2>${t.submitted_at?`<p class="small muted">Submitted ${fmtDate(t.submitted_at)} · ${t.consent?'<span class="pill ok">OK to use in marketing</span>':'<span class="pill warn">No marketing consent</span>'}</p><p style="white-space:pre-wrap">${esc(t.written||"")}</p>${t.video_url?`<p><a href="${esc(t.video_url)}" target="_blank" rel="noopener">Open video link</a></p>`:""}${t.video_path?`<button class="btn ghost" data-act="open-video" data-path="${esc(t.video_path)}">Play uploaded video</button>`:""}`
+    :`<p class="muted">${testimonialOpen(ctx.p)?"Requested. Not submitted yet.":"Unlocks automatically in month 4."}</p>`}
+    <div><button class="btn ghost" data-act="request-testimonial">${ctx.p.testimonial_requested?"Withdraw early request":"Ask for testimonial now"}</button></div></div>`;
+  return `<div class="grid g2"><div class="stack"><h1>Share your Velocity story</h1>
+    <p>Your story is how the next physician stuck in a W2 job decides this is possible. Thank you.</p>
+    ${st.testimonialGuideVideoUrl?videoBlock(st.testimonialGuideVideoUrl,""):""}
+    <div class="panel"><h3>Writing it</h3><ul class="small"><li>Where were you before Velocity? Job, schedule, how you felt.</li><li>What changed? Real numbers: rate, shifts a month, income, days off.</li><li>What surprised you?</li><li>Who would you tell to join, and why?</li></ul></div>
+    <div class="panel"><h3>Recording the video</h3><ul class="small"><li>60–90 seconds, phone sideways at eye level.</li><li>Face a window, quiet room.</li><li>Start with your name, specialty and where you practice.</li><li>Answer the four prompts above. Notes are fine, no script.</li></ul></div></div>
+    <form class="panel stack" data-form="story"><h2>${t.submitted_at?"Thank you. You can still edit this.":"Your testimonial"}</h2>
+    <div class="field"><label class="f" for="tw">Written testimonial</label><textarea class="input" id="tw" name="written" style="min-height:170px">${esc(t.written||"")}</textarea></div>
+    <div class="field"><label class="f" for="tv">Video link (Loom, Google Drive, unlisted YouTube)</label><input class="input" id="tv" name="video_url" value="${esc(t.video_url||"")}"></div>
+    <div class="field"><label class="f" for="tf">Or upload the video file</label><input class="input" id="tf" type="file" accept="video/*" name="file">${t.video_path?`<p class="small muted">A video is uploaded. Uploading again replaces it.</p>`:""}</div>
+    <label class="row small"><input type="checkbox" name="consent" ${t.consent?"checked":""}> Locumos can share my testimonial, name and specialty in marketing.</label>
+    <div><button class="btn" type="submit">${t.submitted_at?"Save changes":"Submit testimonial"}</button></div></form></div>`;
+}
+
+/* ---------- staff ---------- */
+function studentRows(){
+  const {profiles,tasks,checkins}=S.staff;
+  return profiles.filter(p=>p.role==="student").map(p=>{
+    const t=tasks.filter(x=>x.student_id===p.id),c=counts(t),P=pos(p);
+    const cis=checkins.filter(x=>x.student_id===p.id);const last=cis.reduce((a,b)=>!a||new Date(b.created_at)>new Date(a.created_at)?b:a,null);
+    const overdue=t.filter(x=>x.month<P.month&&x.status!=="done").length;
+    const since=last?Math.floor((Date.now()-new Date(last.created_at))/DAY):null;
+    let h={label:"On track",cls:"ok",rank:2};
+    if(p.onboarding_step<3)h={label:`Onboarding · step ${p.onboarding_step+1}/3`,cls:"warn",rank:1};
+    else if(P.week>1&&(since===null||since>9))h={label:"Missed check-in",cls:"bad",rank:0};
+    else if(overdue>=2)h={label:"Behind",cls:"bad",rank:0};
+    return {p,c,P,last,help:!!last?.need_help&&!last?.reply,h,f:freedom(p.onboarding)};
+  });
+}
+function staffView(){
+  if(S.view==="student"&&S.sel)return staffStudent();
+  if(S.view==="insights")return insightsView();
+  if(S.view==="templates")return templatesView();
+  if(S.view==="settings")return settingsView();
+  if(S.view==="team"&&isAdmin())return teamView();
+  const rows=studentRows(),wk=Date.now()-7*DAY;
+  const F={all:()=>true,attention:r=>r.h.rank===0,help:r=>r.help,onboarding:r=>r.p.onboarding_step<3,m4:r=>r.P.month>=4,story:r=>testimonialOpen(r.p)&&!r.p.testimonial?.submitted_at};
+  const list=rows.filter(F[S.staff.filter]||F.all).sort((a,b)=>a.h.rank-b.h.rank||(b.help-a.help));
+  const stat=[["Students",rows.length],["Active in program",rows.filter(r=>r.p.onboarding_step>=3).length],["Checked in this week",rows.filter(r=>r.last&&new Date(r.last.created_at)>wk).length],["Asked for help",rows.filter(r=>r.help).length],["Need attention",rows.filter(r=>r.h.rank===0).length],["Avg. progress",rows.length?Math.round(rows.reduce((a,r)=>a+r.c.pct,0)/rows.length)+"%":"—"]];
+  const studs=rows.map(r=>r.p).sort((a,b)=>nameOf(a).localeCompare(nameOf(b)));
+  const addPanel=`<form class="panel stack" data-form="assign" style="margin-bottom:1.2rem"><div class="row between"><h2>Add a task</h2><span class="small muted">It appears on their board under To do.</span></div>
+    <div class="grid g2"><div class="stack">
+      <div><label class="f" for="as-t">Task</label><input class="input" id="as-t" name="title" required placeholder="e.g. Watch the S-corp training on Skool"></div>
+      <div><label class="f" for="as-n">Note or link (optional)</label><input class="input" id="as-n" name="note" placeholder="https://www.skool.com/…"></div>
+      <div><label class="f" for="as-m">Month</label><select class="input" id="as-m" name="month">${[1,2,3,4].map(m=>`<option value="${m}">Month ${m}: ${MONTHS[m-1].name}</option>`).join("")}</select></div></div>
+    <div class="stack"><fieldset style="border:0;padding:0;margin:0"><legend class="f">Give it to</legend>
+      <label class="row"><input type="radio" name="to" value="all" checked data-act="assign-to"> Everyone (${studs.length} doctors)</label>
+      <label class="row small" style="margin-left:1.6rem" data-show="all"><input type="checkbox" name="future" checked> Also give it to doctors who join later</label>
+      <label class="row"><input type="radio" name="to" value="some" data-act="assign-to"> Specific doctors</label></fieldset>
+      <div data-show="some" hidden><input class="input" data-act="assign-filter" placeholder="Search doctors" aria-label="Search doctors" style="margin-bottom:.4rem">
+        <div style="max-height:190px;overflow:auto;border:1px solid var(--line);border-radius:9px;padding:.4rem .7rem">${studs.length?studs.map(p=>`<label class="row small" data-name="${esc(nameOf(p).toLowerCase())}" style="padding:.2rem 0"><input type="checkbox" name="ids" value="${esc(p.id)}"> ${esc(nameOf(p))} <span class="muted">${esc(p.onboarding?.specialty||"")}</span></label>`).join(""):`<p class="small muted">No doctors yet.</p>`}</div></div>
+    </div></div>
+    <div><button class="btn" type="submit">Add task</button></div></form>`;
+  return addPanel+`<div class="stats">${stat.map(([l,v])=>`<div class="stat"><b>${v}</b><span class="small muted">${l}</span></div>`).join("")}</div>
+  <div class="filters" role="group" aria-label="Filter">${[["all","All"],["attention","Need attention"],["help","Asked for help"],["onboarding","Still onboarding"],["m4","Month 4"],["story","Testimonial pending"]].map(([k,l])=>`<button class="chip" data-act="filter" data-f="${k}" aria-pressed="${S.staff.filter===k}">${l}</button>`).join("")}</div>
+  ${rows.length?`<div class="table-wrap"><table><thead><tr><th>Doctor</th><th>Season</th><th>Month</th><th>Progress</th><th>Last check-in</th><th>Freedom #</th><th>Status</th></tr></thead><tbody>
+  ${list.map(r=>`<tr class="click" data-act="open" data-id="${esc(r.p.id)}" tabindex="0"><td><b>${esc(nameOf(r.p))}</b><br><span class="small muted">${esc(r.p.onboarding?.specialty||r.p.email||"")}</span></td>
+    <td>${esc(r.p.onboarding?.season||"—")}</td><td>${r.P.month} <span class="small muted">· wk ${r.P.week}</span></td>
+    <td><div class="meter"><i style="width:${r.c.pct}%"></i></div><span class="small muted">${r.c.done}/${r.c.total}</span></td>
+    <td>${r.last?fmtDate(r.last.created_at):"—"} ${r.help?'<span class="pill bad">Help</span>':""}</td>
+    <td>${r.f?Math.round(r.f.perMonth*10)/10+"/mo":"—"}</td><td><span class="pill ${r.h.cls}">${esc(r.h.label)}</span></td></tr>`).join("")}</tbody></table></div>${list.length?"":`<p class="empty">No students match this filter.</p>`}`
+  :`<div class="panel empty"><h2>No students yet</h2><p>Send doctors your portal link. They appear here as soon as they sign in.</p></div>`}`;
+}
+function staffStudent(){
+  const d=S.selData,p=d.p;if(!p)return `<p class="muted">Loading…</p>`;
+  const ctx={p,tasks:d.tasks,checkins:d.checkins,staff:true,tab:S.selTab},P=pos(p);
+  const tabs=[["board","Student view"],["plan","Answers"],["checkin","Check-ins"],["notes","Coach notes"],["story","Testimonial"]];
+  return `<div class="staffbar"><button class="btn ghost" data-act="nav" data-v="students">← All students</button>
+    <div><b>${esc(nameOf(p))}</b> <span style="opacity:.75">· ${esc(p.onboarding?.specialty||p.email||"")} · month ${P.month}, week ${P.week}</span></div>
+    <nav class="tabs">${tabs.map(([k,l])=>`<button class="tab" data-act="sel-tab" data-v="${k}" ${S.selTab===k?'aria-current="page"':""}>${l}</button>`).join("")}</nav></div>
+  ${S.selTab==="notes"?`<div class="grid g2"><div class="panel stack"><h2>Coach notes</h2><p class="small muted">Only coaches and admins see these.</p><textarea class="input" id="notes" style="min-height:200px">${esc(d.note)}</textarea><div><button class="btn" data-act="save-note">Save notes</button></div></div>
+    <div class="panel stack"><h2>Program settings</h2><label class="f" for="sd">Start date</label><input class="input" type="date" id="sd" data-act="start-date" value="${new Date(p.start_date).toISOString().slice(0,10)}">
+    <p class="small muted">Changes which month and week they’re in.</p><label class="f">Onboarding</label><p class="small">Step ${Math.min(p.onboarding_step,3)} of 3 complete${p.onboarding_step<3?` · <button class="btn quiet" data-act="skip-onboarding">Mark onboarding complete</button>`:""}</p></div></div>`
+  :studentPortal(ctx)}`;
+}
+function insightsView(){
+  const ms=S.staff.profiles.filter(p=>p.role==="student"&&p.tally_submitted_at);
+  const count=k=>{const c={};ms.forEach(p=>{const v=(p.onboarding?.[k]||"").trim();if(v)c[v]=(c[v]||0)+1});return Object.entries(c).sort((a,b)=>b[1]-a[1])};
+  const bars=r=>{const mx=Math.max(1,...r.map(x=>x[1]));return r.length?`<div class="bars">${r.map(([l,n])=>`<div><span>${esc(l)}</span><div class="meter"><i style="width:${n/mx*100}%"></i></div><b>${n}</b></div>`).join("")}</div>`:`<p class="muted">No answers yet.</p>`};
+  const quotes=k=>{const r=ms.filter(p=>p.onboarding?.[k]);return r.length?r.map(p=>`<div class="ci"><p style="white-space:pre-wrap">${esc(p.onboarding[k])}</p><p class="small muted">${esc(nameOf(p))}</p></div>`).join(""):`<p class="muted">No answers yet.</p>`};
+  return `<div class="stack"><h1>Insights</h1><p class="muted">From ${ms.length} Freedom Number submission${ms.length===1?"":"s"}.</p>
+  <div class="grid g2"><div class="panel"><h2>How they heard about us</h2>${bars(count("heardFrom"))}</div><div class="panel"><h2>Season</h2>${bars(count("season"))}</div>
+  <div class="panel"><h2>Biggest bottleneck</h2>${bars(count("bottleneck"))}</div><div class="panel"><h2>Content that converted them</h2>${quotes("contentPiece")}</div>
+  <div class="panel"><h2>What almost stopped them</h2>${quotes("almostStopped")}</div><div class="panel"><h2>Why they joined</h2>${quotes("whyJoined")}</div></div></div>`;
+}
+function templatesView(){
+  const t=S.staff.templates;
+  return `<form class="stack" data-form="templates"><h1>Starting checklist</h1><p class="muted">One task per line. Every new doctor gets these when they sign up. To give a task to doctors who are already in, use “Add a task” on the Students page.</p>
+  <div class="grid g2">${[1,2,3,4].map(m=>`<div class="panel"><label class="f" for="tp${m}">Month ${m}: ${MONTHS[m-1].name}</label><textarea class="input" id="tp${m}" name="m${m}" style="min-height:190px">${esc(t.filter(x=>x.month===m).sort((a,b)=>a.position-b.position).map(x=>x.title).join("\n"))}</textarea></div>`).join("")}</div>
+  <div><button class="btn" type="submit">Save templates</button></div></form>`;
+}
+function settingsView(){
+  const st=S.settings;
+  return `<form class="stack" data-form="settings"><h1>Settings</h1><div class="grid g2">
+    <div class="panel stack"><h2>Onboarding flow</h2>
+      <div class="field"><label class="f" for="s1">Ali’s welcome video link</label><input class="input" id="s1" name="welcomeVideoUrl" value="${esc(st.welcomeVideoUrl||"")}" placeholder="YouTube, Loom, Vimeo or a direct .mp4 link"></div>
+      <div class="field"><label class="f" for="s2">Welcome message</label><textarea class="input" id="s2" name="welcomeText">${esc(st.welcomeText||"")}</textarea></div>
+      <div class="field"><label class="f" for="s3">Tally form ID</label><input class="input" id="s3" name="tallyFormId" value="${esc(st.tallyFormId||CONFIG.TALLY_FORM_ID)}"></div>
+      <div class="field"><label class="f" for="s4">Skool invite link</label><input class="input" id="s4" name="skoolUrl" value="${esc(st.skoolUrl||CONFIG.SKOOL_URL)}"></div></div>
+    <div class="panel stack"><h2>Preview</h2>${videoBlock(st.welcomeVideoUrl,"No welcome video yet.")}
+      <div class="field"><label class="f" for="s5">Testimonial how-to video link</label><input class="input" id="s5" name="testimonialGuideVideoUrl" value="${esc(st.testimonialGuideVideoUrl||"")}"></div></div></div>
+    <div><button class="btn" type="submit">Save settings</button></div></form>`;
+}
+function teamView(){
+  const ps=S.staff.profiles;
+  return `<div class="stack"><h1>Team & roles</h1><p class="muted">Everyone signs in the same way. Change someone’s role here. Coaches can see and manage every student. Admins can also change roles.</p>
+  <div class="table-wrap"><table><thead><tr><th>Name</th><th>Email</th><th>Joined</th><th>Role</th></tr></thead><tbody>
+  ${ps.map(p=>`<tr><td>${esc(nameOf(p))}</td><td>${esc(p.email||"")}</td><td>${fmtDate(p.created_at)}</td><td><select class="input" style="width:auto" data-act="role" data-id="${esc(p.id)}" ${p.id===S.me.id?"disabled":""}>${["student","coach","admin"].map(r=>`<option ${p.role===r?"selected":""}>${r}</option>`).join("")}</select></td></tr>`).join("")}
+  </tbody></table></div></div>`;
+}
+
+/* =====================================================================
+   ACTIONS
+   ===================================================================== */
+function ctxProfile(){return isStaff()?S.selData.p:S.me}
+function ctxTasks(){return isStaff()?S.selData.tasks:S.my.tasks}
+async function moveTask(id,to,beforeId){
+  const tasks=ctxTasks(),t=tasks.find(x=>x.id===id);if(!t)return;
+  const col=tasks.filter(x=>x.month===t.month&&x.status===to&&x.id!==id).sort((a,b)=>a.position-b.position);
+  let position;
+  if(beforeId){const i=col.findIndex(x=>x.id===beforeId);const prev=col[i-1];position=prev?(prev.position+col[i].position)/2:col[i].position-1}
+  else position=(col.at(-1)?.position??0)+1;
+  if(t.status===to&&!beforeId)return;
+  const patch={status:to,position,done_at:to==="done"?now():null};
+  Object.assign(t,patch);render();
+  if(await run(()=>S.api.updateTask(id,patch),to==="done"?"Nice work.":null)===false)await refresh();
+  else if(isStaff())loadStaff();
+}
+
+document.addEventListener("click",async e=>{
+  const el=e.target.closest("[data-act]");if(!el)return;const a=el.dataset.act;
+  if(el.tagName==="SELECT"||(el.tagName==="INPUT"&&el.type!=="checkbox"))return;
+  if(a==="nav"){S.view=el.dataset.v;S.editing=false;if(el.dataset.v==="students"){S.sel=null}render();scrollTo(0,0)}
+  else if(a==="month"){if(isStaff())S.selMonth=+el.dataset.m;else S.month=+el.dataset.m;render()}
+  else if(a==="move")moveTask(el.dataset.id,el.dataset.to);
+  else if(a==="del-card"){if(!confirm("Delete this task?"))return;await run(()=>S.api.deleteTask(el.dataset.id),"Task deleted.");await refresh()}
+  else if(a==="goal"){const p=ctxProfile();const o={...(p.onboarding||{})};o._goalChecks={...(o._goalChecks||{}),[el.dataset.k]:el.checked};await run(()=>S.api.updateProfile(p.id,{onboarding:o}));await refresh()}
+  else if(a==="edit"){S.editing=!S.editing;render()}
+  else if(a==="signout"){await S.api.signOut();if(DEMO){S.user=null;render()}}
+  else if(a==="signin-reset"){S.signInSent=false;render()}
+  else if(a==="flow-next"){const to=+el.dataset.to;await run(()=>S.api.updateProfile(S.me.id,{onboarding_step:to}));S.me.onboarding_step=to;render();scrollTo(0,0)}
+  else if(a==="skool-open"){setTimeout(()=>{S.flowSkoolClicked=true;render()},300)}
+  else if(a==="flow-finish"){
+    await run(()=>S.api.updateProfile(S.me.id,{onboarding_step:3,skool_joined_at:now()}));
+    const done=S.my.tasks.length?S.my.tasks:await S.api.tasks(S.me.id);
+    for(const t of done.filter(t=>/welcome video/i.test(t.title)&&t.status!=="done"))await run(()=>S.api.updateTask(t.id,{status:"done",done_at:now()}));
+    S.launching=true;render();await loadMine();setTimeout(()=>{S.launching=false;S.view="board";render();scrollTo(0,0)},1400);
+  }
+  else if(a==="tally-manual"){
+    const patch={tally_submitted_at:now()};
+    if(DEMO&&!Object.keys(S.me.onboarding||{}).length)patch.onboarding={...S.api.D.profiles.find(p=>p.id==="sarah").onboarding,name:"Dr. Alex Morgan"},patch.full_name="Dr. Alex Morgan";
+    await run(()=>S.api.updateProfile(S.me.id,patch),DEMO?"Demo: filled with sample answers.":"Thanks. Your answers will appear shortly.");
+    const ft=(await S.api.tasks(S.me.id)).find(x=>/freedom number/i.test(x.title)&&x.status!=="done");
+    if(ft)await run(()=>S.api.updateTask(ft.id,{status:"done",done_at:now()}));
+    S.me=await S.api.profile(S.me.id);render();
+  }
+  else if(a==="filter"){S.staff.filter=el.dataset.f;render()}
+  else if(a==="open"){S.sel=el.dataset.id;S.selTab="board";S.selMonth=null;S.view="student";S.editing=false;await loadSel();render();scrollTo(0,0)}
+  else if(a==="sel-tab"){S.selTab=el.dataset.v;S.editing=false;render()}
+  else if(a==="save-note"){await run(()=>S.api.saveNote(S.sel,document.getElementById("notes").value),"Notes saved.")}
+  else if(a==="request-testimonial"){const p=S.selData.p;await run(()=>S.api.updateProfile(p.id,{testimonial_requested:!p.testimonial_requested}),p.testimonial_requested?"Request withdrawn.":"They’ll see the request on their board.");await refresh()}
+  else if(a==="skip-onboarding"){await run(()=>S.api.updateProfile(S.sel,{onboarding_step:3}),"Onboarding marked complete.");await refresh()}
+  else if(a==="open-video"){const u=await S.api.fileUrl(el.dataset.path);if(u)open(u,"_blank","noopener");else toast("Couldn’t open the video.")}
+});
+document.addEventListener("input",e=>{const el=e.target;if(el.dataset.act!=="assign-filter")return;const q=el.value.toLowerCase().trim();el.form.querySelectorAll("[data-name]").forEach(l=>l.hidden=!!q&&!l.dataset.name.includes(q))});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches("tr[data-act=open]"))e.target.click()});
+document.addEventListener("change",async e=>{
+  const el=e.target;
+  if(el.dataset.act==="demo-user"){S.api.setUser(el.value);S.month=null;S.sel=null;S.flowSkoolClicked=false;await loadUser(await S.api.currentUser())}
+  else if(el.dataset.act==="role"){const ok=await run(()=>S.api.updateProfile(el.dataset.id,{role:el.value}),"Role updated.");if(!ok)el.value=S.staff.profiles.find(p=>p.id===el.dataset.id)?.role;else await loadStaff()}
+  else if(el.dataset.act==="assign-to"){const f=el.form;f.querySelector('[data-show="some"]').hidden=el.value!=="some";f.querySelector('[data-show="all"]').hidden=el.value!=="all"}
+  else if(el.dataset.act==="start-date"&&el.value){await run(()=>S.api.updateProfile(S.sel,{start_date:new Date(el.value+"T12:00:00").toISOString()}),"Start date updated.");await refresh()}
+});
+
+/* drag and drop */
+document.addEventListener("dragstart",e=>{const c=e.target.closest?.(".card");if(!c)return;S.dragId=c.dataset.card;c.classList.add("dragging");e.dataTransfer.effectAllowed="move";e.dataTransfer.setData("text/plain",S.dragId)});
+document.addEventListener("dragend",e=>{e.target.closest?.(".card")?.classList.remove("dragging");document.querySelectorAll(".col.over").forEach(c=>c.classList.remove("over"))});
+document.addEventListener("dragover",e=>{const col=e.target.closest?.("[data-drop]");if(!col||!S.dragId)return;e.preventDefault();document.querySelectorAll(".col.over").forEach(c=>c!==col&&c.classList.remove("over"));col.classList.add("over")});
+document.addEventListener("drop",e=>{const col=e.target.closest?.("[data-drop]");if(!col||!S.dragId)return;e.preventDefault();
+  const before=e.target.closest(".card");const id=S.dragId;S.dragId=null;
+  moveTask(id,col.dataset.drop,before&&before.dataset.card!==id?before.dataset.card:null)});
+
+document.addEventListener("submit",async e=>{
+  const f=e.target,k=f.dataset.form;if(!k)return;e.preventDefault();const fd=new FormData(f);
+  if(k==="signin"){const email=String(fd.get("email")).trim();if(await run(()=>S.api.signIn(email))!==false){S.signInSent=email;render()}}
+  else if(k==="add-card"){
+    const title=String(fd.get("title")||"").trim();if(!title)return;const p=ctxProfile();const month=+f.dataset.month;
+    const col=ctxTasks().filter(t=>t.month===month&&t.status==="todo");
+    await run(()=>S.api.addTasks([{student_id:p.id,month,title,status:"todo",position:(col.at(-1)?.position??0)+1,source:isStaff()?"coach":"student",created_by:S.me.id}]),"Task added.");
+    await refresh();
+  }
+  else if(k==="checkin"){
+    const P=pos(S.me);const row={student_id:S.me.id,week:P.week,wins:fd.get("wins")||"",shifts:num(fd.get("shifts")),earned:num(fd.get("earned")),blocker:fd.get("blocker")||"",confidence:num(fd.get("confidence"))||null,need_help:!!fd.get("need_help")};
+    await run(()=>S.api.saveCheckin(row),"Check-in saved. See you next week.");await refresh();
+  }
+  else if(k==="reply"){await run(()=>S.api.replyCheckin(f.dataset.id,String(fd.get("reply")||"")),"Reply sent.");await refresh()}
+  else if(k==="answers"){
+    const p=ctxProfile();const o={...(p.onboarding||{})};FIELDS.forEach(([key])=>{if(fd.has(key))o[key]=String(fd.get(key)||"")});
+    await run(()=>S.api.updateProfile(p.id,{onboarding:o,full_name:p.full_name||o.name||null}),"Answers saved.");S.editing=false;await refresh();
+  }
+  else if(k==="story"){
+    const t={...(S.me.testimonial||{}),written:String(fd.get("written")||""),video_url:String(fd.get("video_url")||""),consent:!!fd.get("consent")};
+    const file=fd.get("file");
+    if(file&&file.size){if(file.size>200*1024*1024){toast("That file is over 200 MB. Use a link instead.");return}toast("Uploading video…");const path=await run(()=>S.api.upload(S.me.id,file));if(!path)return;t.video_path=path}
+    if(!t.written.trim()&&!t.video_url&&!t.video_path){toast("Add a written testimonial or a video first.");return}
+    t.submitted_at=t.submitted_at||now();
+    await run(()=>S.api.updateProfile(S.me.id,{testimonial:t}),"Thank you. This means a lot.");
+    const st=S.my.tasks.find(x=>/share your velocity story/i.test(x.title)&&x.status!=="done");if(st)await run(()=>S.api.updateTask(st.id,{status:"done",done_at:now()}));
+    await refresh();
+  }
+  else if(k==="assign"){
+    const title=String(fd.get("title")||"").trim(),note=String(fd.get("note")||"").trim()||null,month=+fd.get("month");if(!title)return;
+    const studs=S.staff.profiles.filter(p=>p.role==="student");
+    const ids=fd.get("to")==="all"?studs.map(p=>p.id):fd.getAll("ids");
+    if(!ids.length){toast("Pick at least one doctor.");return}
+    const ok=await run(()=>S.api.addTasks(ids.map(id=>({student_id:id,month,title,note,status:"todo",position:999,source:"coach",created_by:S.me.id}))));
+    if(ok===false)return;
+    if(fd.get("to")==="all"&&fd.get("future")){const rows=S.staff.templates.map(({month,title,position})=>({month,title,position}));rows.push({month,title,position:rows.filter(r=>r.month===month).length+1});await run(()=>S.api.saveTemplates(rows))}
+    toast(ids.length===1?"Task added.":`Task added for ${ids.length} doctors.`);f.reset();await refresh();
+  }
+  else if(k==="add-all"){
+    const title=String(fd.get("title")||"").trim(),month=+fd.get("month");if(!title)return;
+    const studs=S.staff.profiles.filter(p=>p.role==="student");
+    await run(()=>S.api.addTasks(studs.map(p=>({student_id:p.id,month,title,status:"todo",position:999,source:"coach",created_by:S.me.id}))),`Added to ${studs.length} students.`);
+    f.reset();await refresh();
+  }
+  else if(k==="templates"){
+    const rows=[];[1,2,3,4].forEach(m=>String(fd.get("m"+m)||"").split("\n").map(s=>s.trim()).filter(Boolean).forEach((title,i)=>rows.push({month:m,title,position:i+1})));
+    await run(()=>S.api.saveTemplates(rows),"Templates saved.");await loadStaff();render();
+  }
+  else if(k==="settings"){
+    const o={};["welcomeVideoUrl","welcomeText","tallyFormId","skoolUrl","testimonialGuideVideoUrl"].forEach(x=>o[x]=String(fd.get(x)||"").trim());
+    await run(()=>S.api.saveSettings(o),"Settings saved.");S.settings=await S.api.settings();render();
+  }
+});
+
+/* Tally embed → saves answers instantly (the webhook is the backup) */
+window.addEventListener("message",async ev=>{
+  let host="";try{host=new URL(ev.origin).hostname}catch{}
+  if(!/(^|\.)tally\.so$/.test(host)||!S.me||isStaff())return;
+  let d=ev.data;if(typeof d==="string"){try{d=JSON.parse(d)}catch{return}}
+  if(d?.event!=="Tally.FormSubmitted")return;
+  const ans={};
+  (d.payload?.fields||[]).forEach(f=>{const key=LABEL_TO_KEY[norm(f.title??f.label??"")];if(!key)return;
+    let v=f.answer?.value??f.value;
+    if(Array.isArray(v))v=v.map(x=>typeof x==="object"?(x.text??x.name??""):(f.options?.find?.(o=>o.id===x)?.text??x)).join(", ");
+    else if(v&&typeof v==="object")v=v.text??v.name??"";
+    ans[key]=v==null?"":String(v)});
+  const patch={onboarding:{...(S.me.onboarding||{}),...ans},tally_submitted_at:now()};
+  if(ans.name&&!S.me.full_name)patch.full_name=ans.name;
+  if(await run(()=>S.api.updateProfile(S.me.id,patch),"Saved. Continue when you’re ready.")!==false){
+    const t=(await S.api.tasks(S.me.id)).find(x=>/freedom number/i.test(x.title)&&x.status!=="done");
+    if(t)await run(()=>S.api.updateTask(t.id,{status:"done",done_at:now()}));
+    S.me=await S.api.profile(S.me.id);render();
+  }
+});
+
+boot();
+</script>
+</body>
+</html>
